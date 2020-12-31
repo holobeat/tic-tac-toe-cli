@@ -47,10 +47,7 @@ enum input_results
 char *init_board()
 {
     char *board = (char *)calloc(9, sizeof(char));
-    for (int i = 0; i < 9; i++)
-    {
-        board[i] = '.';
-    }
+    memset(board, '.', 9);
     return board;
 }
 
