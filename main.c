@@ -216,7 +216,7 @@ void main()
             break;
         case quit:
             printf("Quitting...Bye!\n");
-            game_state = terminated;
+            model.game_state = terminated; // not really used
             break;
         default:
             printf("Not implemented\n");
