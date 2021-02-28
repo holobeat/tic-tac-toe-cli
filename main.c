@@ -47,18 +47,9 @@ enum input_results
 typedef struct Model {
     enum game_states game_state;
     enum input_results input_result;
-    char *board;
+    char board[9];
     int active_player;
 } Model;
-
-
-// initialize new board
-char *init_board()
-{
-    char *board = (char *)calloc(9, sizeof(char));
-    memset(board, '.', 9);
-    return board;
-}
 
 // display the current state of the game board
 void render(char *board)
@@ -194,7 +185,7 @@ void render_intro()
 void main()
 {
     Model model;
-    model.board = init_board();
+    strcpy(model.board, ".........");
     model.active_player = 'O';
     char choice[3];
 
@@ -231,6 +222,4 @@ void main()
             printf("Not implemented\n");
         }
     }
-
-    free(model.board);
 }
