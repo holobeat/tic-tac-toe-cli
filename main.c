@@ -38,10 +38,19 @@ enum game_states
 
 enum input_results
 {
+    none,
     correct,
     invalid_move,
     quit
 } input_result;
+
+typedef struct Model {
+    enum game_states game_state;
+    enum input_results input_result;
+    char *board;
+    int active_player;
+} Model;
+
 
 // initialize new board
 char *init_board()
@@ -76,7 +85,7 @@ bool all_pieces_in(char *board, char player)
 }
 
 // evaluate user input and return input_result
-enum input_results eval_input(char *board, char *choice, char player)
+enum input_results eval_input(Model *model, char *choice)
 {
     int choice_num, from_index, to_index;
     // check for quit command
@@ -88,7 +97,7 @@ enum input_results eval_input(char *board, char *choice, char player)
     if (choice_num == 0)
         return invalid_move;
 
-    if (all_pieces_in(board, player))
+    if (all_pieces_in(model->board, model->active_player))
     {
         // if all pieces of the player are in, we expect the player
         // to move from one position to another
@@ -97,10 +106,10 @@ enum input_results eval_input(char *board, char *choice, char player)
         from_index = (int)(choice_num / 10 - 1);
         to_index = (int)(choice_num % 10 - 1);
         // >>from<< position must match the correct player
-        if (player != board[from_index])
+        if (model->active_player != model->board[from_index])
             return invalid_move;
         // target position must be empty
-        if (board[to_index] != '.')
+        if (model->board[to_index] != '.')
             return invalid_move;
     }
     else
@@ -110,33 +119,33 @@ enum input_results eval_input(char *board, char *choice, char player)
             return invalid_move;
         to_index = choice_num - 1;
         // target position must be empty
-        if (board[to_index] != '.')
+        if (model->board[to_index] != '.')
             return invalid_move;
     }
     return correct;
 }
 
 // updates board with player's move
-void move(char *board, char *choice, char player)
+void move(Model *model, char *choice)
 {
     int choice_num, from_index, to_index;
     choice_num = atoi(choice);
-    if (all_pieces_in(board, player))
+    if (all_pieces_in(model->board, model->active_player))
     {
         from_index = (int)(choice_num / 10 - 1);
         to_index = (int)(choice_num % 10 - 1);
-        board[from_index] = '.';
-        board[to_index] = player;
+        model->board[from_index] = '.';
+        model->board[to_index] = model->active_player;
     }
     else
     {
         to_index = choice_num - 1;
-        board[to_index] = player;
+        model->board[to_index] = model->active_player;
     }
 }
 
 // return true if the given player won
-bool did_player_win(char *board, char player)
+bool did_player_win(Model *model)
 {
     // winning patterns
     static const int wp[8][3] = {
@@ -151,9 +160,9 @@ bool did_player_win(char *board, char player)
 
     for (int i = 0; i < 8; i++)
     {
-        if (board[wp[i][0] - 1] == player &&
-            board[wp[i][1] - 1] == player &&
-            board[wp[i][2] - 1] == player)
+        if (model->board[wp[i][0] - 1] == model->active_player &&
+            model->board[wp[i][1] - 1] == model->active_player &&
+            model->board[wp[i][2] - 1] == model->active_player)
         {
             return true;
         }
@@ -184,30 +193,31 @@ void render_intro()
 
 void main()
 {
-    char *board = init_board();
+    Model model;
+    model.board = init_board();
+    model.active_player = 'O';
     char choice[3];
-    char active_player = 'O';
 
     render_intro();
 
-    render(board);
-    game_state = pending_move;
-    while (game_state == pending_move)
+    render(model.board);
+    model.game_state = pending_move;
+    while (model.game_state == pending_move)
     {
-        printf("Player '%c' move: ", active_player);
+        printf("Player '%c' move: ", model.active_player);
         scanf("%2s", choice);
-        switch (eval_input(board, choice, active_player))
+        switch (eval_input(&model, choice))
         {
         case correct:
-            move(board, choice, active_player);
-            render(board);
-            if (did_player_win(board, active_player))
+            move(&model, choice);
+            render(model.board);
+            if (did_player_win(&model))
             {
-                printf("Player '%c' wins!\n", active_player);
-                game_state = game_over;
+                printf("Player '%c' wins!\n", model.active_player);
+                model.game_state = game_over;
             }
             // switch the player
-            active_player = active_player == 'O' ? 'X' : 'O';
+            model.active_player = model.active_player == 'O' ? 'X' : 'O';
             break;
         case invalid_move:
             printf("Invalid move!\n");
@@ -222,5 +232,5 @@ void main()
         }
     }
 
-    free(board);
+    free(model.board);
 }
