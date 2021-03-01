@@ -29,6 +29,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdbool.h>
 
+#define EMPTY_BOARD "........."
+#define PLAYER1 'O'
+#define PLAYER2 'X'
+
 enum game_states
 {
     pending_move,
@@ -44,7 +48,8 @@ enum input_results
     quit
 } input_result;
 
-typedef struct Model {
+typedef struct Model
+{
     enum game_states game_state;
     enum input_results input_result;
     char board[9];
@@ -68,9 +73,7 @@ bool all_pieces_in(char *board, char player)
         if (board[i] == player)
             count++;
         if (count == 3)
-        {
             return true;
-        }
     }
     return false;
 }
@@ -184,15 +187,15 @@ void render_intro()
 
 void main()
 {
-    Model model;
-    strcpy(model.board, ".........");
-    model.active_player = 'O';
+    Model model = {
+        .active_player = PLAYER1,
+        .game_state = pending_move};
+    strcpy(model.board, EMPTY_BOARD);
     char choice[3];
 
     render_intro();
-
     render(model.board);
-    model.game_state = pending_move;
+
     while (model.game_state == pending_move)
     {
         printf("Player '%c' move: ", model.active_player);
@@ -208,7 +211,7 @@ void main()
                 model.game_state = game_over;
             }
             // switch the player
-            model.active_player = model.active_player == 'O' ? 'X' : 'O';
+            model.active_player = model.active_player == PLAYER1 ? PLAYER2 : PLAYER1;
             break;
         case invalid_move:
             printf("Invalid move!\n");
