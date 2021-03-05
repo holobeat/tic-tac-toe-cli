@@ -190,7 +190,7 @@ void main()
     Model model = {
         .active_player = PLAYER1,
         .game_state = pending_move};
-    strcpy(model.board, EMPTY_BOARD);
+    strcpy_s(model.board, 9, EMPTY_BOARD);
     char choice[3];
 
     render_intro();
